@@ -24,6 +24,21 @@ then
 fi
 
 
+# Helpers
+function indent() {
+    c='s/^/       /'
+
+    case $(uname) in
+        Darwin) sed -l "$c";;
+        *)      sed -u "$c";;
+    esac
+}
+
+function arrow() {
+    sed -u 's/^/-----> /'
+}
+
+
 # Prepares the environment by creating the necessary directories.
 function prepare() {
     rm -Rf "${LIBVIPS_DIR}"
@@ -51,7 +66,7 @@ function get_version() {
         LIBVIPS_VERSION=$( cat "${ENV_DIR}/LIBVIPS_VERSION" )
     fi
 
-    info "Using version ${LIBVIPS_VERSION}"
+    echo "Using version ${LIBVIPS_VERSION}" | indent
 }
 
 # Install libvips
@@ -66,14 +81,14 @@ function install() {
     archive="${STACK}_vips-${LIBVIPS_VERSION}"
     src="${BUILDPACK_DIR}/compiled/${archive}.tar.gz"
 
-    header "Installing libvips"
+    echo "Installing libvips" | arrow
 
     if [ -f "${src}" ]
     then
         unpack "${src}" "${LIBVIPS_DIR}"
     else
-        info "libvips ${LIBVIPS_VERSION} is not available for the stack ${STACK}."
-        info "You may either chose another version or build it yourself using the builder.sh script."
+        echo "libvips ${LIBVIPS_VERSION} is not available for the stack ${STACK}." | indent
+        echo "You may either chose another version or build it yourself using the builder.sh script." | indent
         exit 404
     fi
 }
@@ -86,17 +101,17 @@ function unpack() {
     src="${1}"; shift
     dst="${1}"; shift
 
-    info "Unpacking"
+    echo "Unpacking" | indent
     tar xf "${src}" -C "${dst}"
 }
 
 # Writes .profile.d scripts
 function write_profiled() {
-    header "Writing profile.d script"
+    echo "Writing profile.d script" | arrow
 
     mkdir -p "${BUILD_DIR}/.profile.d"
 
-    cat <<EOF >"${BUILD_DIR}/.profile.d/libvips.sh"
+    cat <<EOF >"${BUILD_DIR}/.profile.d/libvips.env.sh"
 export PATH="\$LIBVIPS_DIR/vips/bin:\$PATH"
 export LD_LIBRARY_PATH="\$LIBVIPS_DIR/vips/lib:\$LD_LIBRARY_PATH"
 EOF
@@ -109,10 +124,3 @@ EOF
 prepare
 install
 write_profiled
-
-#FIXME:
-#give environment to later buildpacks
-# export | grep -E -e ' (PATH|LD_LIBRARY_PATH|LIBRARY_PATH|INCLUDE_PATH|CPATH|CPPPATH|PKG_CONFIG_PATH)='  > "$LP_DIR/export"
-
-# topic "Rewrite package-config files"
-# find $BUILD_DIR/.apt -type f -ipath '*/pkgconfig/*.pc' | xargs --no-run-if-empty -n 1 sed -i -e 's!^prefix=\(.*\)$!prefix='"$BUILD_DIR"'/.apt\1!g'
