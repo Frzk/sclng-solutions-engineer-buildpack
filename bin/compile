@@ -1,16 +1,118 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-BUILD_DIR=${1:-}
-CACHE_DIR=${2:-}
-ENV_DIR=${3:-}
+#set -euo pipefail
+set -eo pipefail
+
+BUILD_DIR="${1:-}"
+CACHE_DIR="${2:-}"
+ENV_DIR="${3:-}"
+
+STACK="${STACK:-scalingo-20}"
+
+LIBVIPS_DIR="${BUILD_DIR}/vendor/libvips"
+LIBVIPS_VERSION="${LIBVIPS_VERSION:-8.12.2}"
+
 basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-BUILDPACK_DIR="$(readlink -f ${basedir}/..)"
-source ${BUILDPACK_DIR}/lib/common.sh
+BUILDPACK_DIR="$( readlink -f "${basedir}/.." )"
 
-mkdir -p $CACHE_DIR
-export_env_dir "$ENV_DIR"
+source "${BUILDPACK_DIR}/lib/common.sh"
+export_env_dir "${ENV_DIR}"
 
-if [ -n "$BUILDPACK_DEBUG" ]; then
-  set -x
+if [ -n "${BUILDPACK_DEBUG:-}" ]
+then
+    set -x
 fi
 
+
+# Prepares the environment by creating the necessary directories.
+function prepare() {
+    rm -Rf "${LIBVIPS_DIR}"
+
+    mkdir -p "${CACHE_DIR}"
+    mkdir -p "${ENV_DIR}"
+    mkdir -p "${LIBVIPS_DIR}"
+
+    get_stack
+    get_version
+}
+
+# Try to get STACK version from environment
+function get_stack() {
+    if [ -d "${ENV_DIR}/STACK" ]
+    then
+        STACK=$( cat "${ENV_DIR}/STACK" )
+    fi
+}
+
+# Try to get LIBVIPS version from environment
+function get_version() {
+    if [ -d "${ENV_DIR}/LIBVIPS_VERSION" ]
+    then
+        LIBVIPS_VERSION=$( cat "${ENV_DIR}/LIBVIPS_VERSION" )
+    fi
+
+    info "Using version ${LIBVIPS_VERSION}"
+}
+
+# Install libvips
+# The process is fairly simple:
+#   - check if we have the wanted version in our pre-compiled binaries
+#   - if so, copy them to /build/vendor/libvips/
+#   - else, throw an error.
+function install() {
+    local archive
+    local src
+
+    archive="${STACK}_vips-${LIBVIPS_VERSION}"
+    src="${BUILDPACK_DIR}/compiled/${archive}.tar.gz"
+
+    header "Installing libvips"
+
+    if [ -f "${src}" ]
+    then
+        unpack "${src}" "${LIBVIPS_DIR}"
+    else
+        info "libvips ${LIBVIPS_VERSION} is not available for the stack ${STACK}."
+        info "You may either chose another version or build it yourself using the builder.sh script."
+        exit 404
+    fi
+}
+
+# Unpacks the given archive to the given path
+function unpack() {
+    local src
+    local dst
+
+    src="${1}"; shift
+    dst="${1}"; shift
+
+    info "Unpacking"
+    tar xf "${src}" -C "${dst}"
+}
+
+# Writes .profile.d scripts
+function write_profiled() {
+    header "Writing profile.d script"
+
+    mkdir -p "${BUILD_DIR}/.profile.d"
+
+    cat <<EOF >"${BUILD_DIR}/.profile.d/libvips.sh"
+export PATH="\$LIBVIPS_DIR/vips/bin:\$PATH"
+export LD_LIBRARY_PATH="\$LIBVIPS_DIR/vips/lib:\$LD_LIBRARY_PATH"
+EOF
+
+    export PATH="${LIBVIPS_DIR}/vips/bin:${PATH}"
+    export LD_LIBRARY_PATH="${LIBVIPS_DIR}/vips/lib:${LD_LIBRARY_PATH}"
+}
+
+
+prepare
+install
+write_profiled
+
+#FIXME:
+#give environment to later buildpacks
+# export | grep -E -e ' (PATH|LD_LIBRARY_PATH|LIBRARY_PATH|INCLUDE_PATH|CPATH|CPPPATH|PKG_CONFIG_PATH)='  > "$LP_DIR/export"
+
+# topic "Rewrite package-config files"
+# find $BUILD_DIR/.apt -type f -ipath '*/pkgconfig/*.pc' | xargs --no-run-if-empty -n 1 sed -i -e 's!^prefix=\(.*\)$!prefix='"$BUILD_DIR"'/.apt\1!g'
