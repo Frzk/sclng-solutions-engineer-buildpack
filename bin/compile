@@ -121,6 +121,8 @@ export CPATH="${LIBVIPS_DIR}/include:\$CPATH"
 EOF
 
     source "${BUILD_DIR}/.profile.d/libvips.env.sh"
+
+    export | grep -E -e ' (LD_LIBRARY_PATH|LIBRARY_PATH|INCLUDE_PATH|CPATH|CPPPATH|PKG_CONFIG_PATH)='  > "$BUILDPACK_DIR/export"
 }
 
 
