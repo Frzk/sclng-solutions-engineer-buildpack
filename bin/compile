@@ -89,7 +89,7 @@ function install() {
     else
         echo "libvips ${LIBVIPS_VERSION} is not available for the stack ${STACK}." | indent
         echo "You may either chose another version or build it yourself using the builder.sh script." | indent
-        exit 404
+        exit 100
     fi
 }
 
@@ -107,17 +107,28 @@ function unpack() {
 
 # Writes .profile.d scripts
 function write_profiled() {
+    local p
+    p="${LIBVIPS_DIR}/vips"
+
     echo "Writing profile.d script" | arrow
 
     mkdir -p "${BUILD_DIR}/.profile.d"
 
-    cat <<EOF >"${BUILD_DIR}/.profile.d/libvips.env.sh"
-export PATH="\$LIBVIPS_DIR/vips/bin:\$PATH"
-export LD_LIBRARY_PATH="\$LIBVIPS_DIR/vips/lib:\$LD_LIBRARY_PATH"
-EOF
+    export PATH="${p}/bin:${PATH}"
+    export LD_LIBRARY_PATH="${p}/lib:${LD_LIBRARY_PATH}"
+    export LIBRARY_PATH="${p}/lib:${LIBRARY_PATH}"
+    export PKG_CONFIG_PATH="${p}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+    export CPPPATH="${p}/include:$CPPPATH"
+    export CPATH="${p}/include:$CPATH"
 
-    export PATH="${LIBVIPS_DIR}/vips/bin:${PATH}"
-    export LD_LIBRARY_PATH="${LIBVIPS_DIR}/vips/lib:${LD_LIBRARY_PATH}"
+    cat <<EOF > "${BUILD_DIR}/.profile.d/libvips.env.sh"
+    export PATH="\$PATH:${PATH//$BUILD_DIR//app}"
+    export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:${LD_LIBRARY_PATH//$BUILD_DIR//app}"
+    export LIBRARY_PATH="\$LIBRARY_PATH:${LIBRARY_PATH//$BUILD_DIR//app}"
+    export PKG_CONFIG_PATH="\$PKG_CONFIG_PATH:${PKG_CONFIG_PATH//$BUILD_DIR//app}"
+    export CPPPATH="\$CPPPATH:${CPPPATH//$BUILD_DIR//app}"
+    export CPATH="\$CPATH:${CPATH//$BUILD_DIR//app}"
+EOF
 }
 
 
