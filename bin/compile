@@ -112,12 +112,12 @@ function write_profiled() {
     mkdir -p "${BUILD_DIR}/.profile.d"
 
     cat <<EOF > $BUILD_DIR/.profile.d/libvips.env.sh
-export PATH="\$PATH:${PATH//$BUILD_DIR//app}"
-export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:${LD_LIBRARY_PATH//$BUILD_DIR//app}"
-export LIBRARY_PATH="\$LIBRARY_PATH:${LIBRARY_PATH//$BUILD_DIR//app}"
-export PKG_CONFIG_PATH="\$PKG_CONFIG_PATH:${PKG_CONFIG_PATH//$BUILD_DIR//app}"
-export CPPPATH="\$CPPPATH:${CPPPATH//$BUILD_DIR//app}"
-export CPATH="\$CPATH:${CPATH//$BUILD_DIR//app}"
+export PATH="\$PATH:${LIBVIPS_DIR//$BUILD_DIR//app}/bin"
+export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:${LIBVIPS_DIR//$BUILD_DIR//app}/lib"
+export LIBRARY_PATH="\$LIBRARY_PATH:${LIBVIPS_DIR//$BUILD_DIR//app}/lib"
+export PKG_CONFIG_PATH="\$PKG_CONFIG_PATH:${LIBVIPS_DIR//$BUILD_DIR//app}/lib/pkgconfig"
+export CPPPATH="\$CPPPATH:${LIBVIPS_DIR//$BUILD_DIR//app}/include"
+export CPATH="\$CPATH:${LIBVIPS_DIR//$BUILD_DIR//app}/include"
 EOF
 
     export PATH="${PATH}:${LIBVIPS_DIR}/bin"
