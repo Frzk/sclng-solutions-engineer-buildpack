@@ -127,9 +127,9 @@ EOF
     export CPPPATH="${CPPPATH}:${LIBVIPS_DIR}/include"
     export CPATH="${CPATH}:${LIBVIPS_DIR}/include"
 
-#    export \
-#    | grep -E -e ' (PATH|LD_LIBRARY_PATH|LIBRARY_PATH|CPATH|CPPPATH|PKG_CONFIG_PATH)=' \
-#    > "${BUILDPACK_DIR}/export"
+    export \
+    | grep -E -e ' (PATH|LD_LIBRARY_PATH|LIBRARY_PATH|CPATH|CPPPATH|PKG_CONFIG_PATH)=' \
+    > "${BUILDPACK_DIR}/export"
 }
 
 
