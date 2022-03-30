@@ -38,11 +38,11 @@ If the specified version hasn't been pre-compiled yet, you can fix this by yours
 The [`builder.sh`](builder.sh) script leverages Docker to compile and prepare an archive for a specific version of `libvips`. Since compiling is very time-consuming, it's smarter to compile it once and benefit from it thereafter.
 After the tar file is built, it's placed in the [`compiled`](compiled) directory. Please `git commit` the new file to your buildpack fork repo so you can use it.
 
-## Build configuration
+## Build configurations
 
 `libvips` is compiled without installing optional dependencies. If you need a specific option, feel free to modify the [`builder/Dockerfile`](builder/Dockerfile) to suit your needs.
 
-### scalingo-20
+### Build configuration: scalingo-20
 ```
 enable debug: no
 enable deprecated library components: yes
