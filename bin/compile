@@ -130,30 +130,34 @@ function write_profiled() {
 
     mkdir -p "${BUILD_DIR}/.profile.d"
 
-    export PATH="${LIBVIPS_DIR}/bin:${PATH}"
-    export LD_LIBRARY_PATH="${LIBVIPS_DIR}/lib:${LD_LIBRARY_PATH}"
-    export LIBRARY_PATH="${LIBVIPS_DIR}/lib:${LIBRARY_PATH}"
-    export PKG_CONFIG_PATH="${LIBVIPS_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}"
-    export CPPPATH="${LIBVIPS_DIR}/include:$CPPPATH"
-    export CPATH="${LIBVIPS_DIR}/include:$CPATH"
-
-    cat <<EOF > export
-export PATH="\$PATH:$PATH"
-export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
-export LIBRARY_PATH="\$LIBRARY_PATH:$LIBRARY_PATH"
-export PKG_CONFIG_PATH="\$PKG_CONFIG_PATH:$PKG_CONFIG_PATH"
-export CPPPATH="\$CPPPATH:$CPPPATH"
-export CPATH="\$CPATH:$CPATH"
+    cat <<EOF > "${BUILD_DIR}/.profile.d/libvips.env.sh"
+export PATH="${LIBVIPS_DIR}/bin:\$PATH"
+export LD_LIBRARY_PATH="${LIBVIPS_DIR}/lib:\$LD_LIBRARY_PATH"
+export LIBRARY_PATH="${LIBVIPS_DIR}/lib:\$LIBRARY_PATH"
+export PKG_CONFIG_PATH="${LIBVIPS_DIR}/lib/pkgconfig:\$PKG_CONFIG_PATH"
+export CPPPATH="${LIBVIPS_DIR}/include:\$CPPPATH"
+export CPATH="${LIBVIPS_DIR}/include:\$CPATH"
 EOF
 
-    cat <<EOF > $BUILD_DIR/.profile.d/libvips.env.sh
-export PATH="\$PATH:${PATH//$BUILD_DIR//app}"
-export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:${LD_LIBRARY_PATH//$BUILD_DIR//app}"
-export LIBRARY_PATH="\$LIBRARY_PATH:${LIBRARY_PATH//$BUILD_DIR//app}"
-export PKG_CONFIG_PATH="\$PKG_CONFIG_PATH:${PKG_CONFIG_PATH//$BUILD_DIR//app}"
-export CPPPATH="\$CPPPATH:${CPPPATH//$BUILD_DIR//app}"
-export CPATH="\$CPATH:${CPATH//$BUILD_DIR//app}"
-EOF
+    source "${BUILD_DIR}/.profile.d/libvips.env.sh"
+
+#    cat <<EOF > export
+#export PATH="\$PATH:$PATH"
+#export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
+#export LIBRARY_PATH="\$LIBRARY_PATH:$LIBRARY_PATH"
+#export PKG_CONFIG_PATH="\$PKG_CONFIG_PATH:$PKG_CONFIG_PATH"
+#export CPPPATH="\$CPPPATH:$CPPPATH"
+#export CPATH="\$CPATH:$CPATH"
+#EOF
+
+#    cat <<EOF > $BUILD_DIR/.profile.d/libvips.env.sh
+#export PATH="\$PATH:${PATH//$BUILD_DIR//app}"
+#export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:${LD_LIBRARY_PATH//$BUILD_DIR//app}"
+#export LIBRARY_PATH="\$LIBRARY_PATH:${LIBRARY_PATH//$BUILD_DIR//app}"
+#export PKG_CONFIG_PATH="\$PKG_CONFIG_PATH:${PKG_CONFIG_PATH//$BUILD_DIR//app}"
+#export CPPPATH="\$CPPPATH:${CPPPATH//$BUILD_DIR//app}"
+#export CPATH="\$CPATH:${CPATH//$BUILD_DIR//app}"
+#EOF
 }
 
 
